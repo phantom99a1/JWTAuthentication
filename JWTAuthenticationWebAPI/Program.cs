@@ -1,5 +1,9 @@
 using JWTAuthenticationWebAPI.Core.DbContext;
+using JWTAuthenticationWebAPI.Core.Entities;
+using JWTAuthenticationWebAPI.Core.Identity.Factories;
+using JWTAuthenticationWebAPI.Core.Identity.Stores;
 using JWTAuthenticationWebAPI.Core.Interfaces;
+using JWTAuthenticationWebAPI.Core.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,17 +20,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-//Add DB
+#region Add AddDbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("SqlConnection");
     options.UseSqlServer(connectionString);
 });
-
+#endregion
 
 #region Add Identity (Old)
 builder.Services
-    .AddIdentity<IdentityUser, IdentityRole>()
+    .AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 #endregion
@@ -41,6 +45,35 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.SignIn.RequireConfirmedEmail = false;
 });
+#endregion
+
+#region A better Solution For Add and Config IDentity
+
+builder.Services
+    .AddIdentity<ApplicationUser, ApplicationRole>(options =>
+    {
+        options.Stores.ProtectPersonalData = false;
+
+        options.Password.RequireDigit = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequiredUniqueChars = 0;
+
+        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedEmail = false;
+        options.SignIn.RequireConfirmedPhoneNumber = false;
+    })
+    .AddUserStore<ApplicationUserStore>()
+    .AddRoleStore<ApplicationRoleStore>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders()
+    .AddClaimsPrincipalFactory<ApplicationClaimPrincipalFactory>();
+
+builder.Services.AddScoped<IUserStore<ApplicationUser>, ApplicationUserStore>();
+builder.Services.AddScoped<IRoleStore<ApplicationRole>, ApplicationRoleStore>();
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationClaimPrincipalFactory>();
+
 #endregion
 
 // Add Authentication and JwtBearer
@@ -66,7 +99,7 @@ builder.Services
     });
 
 // Inject app Dependencies (Dependency Injection)
-//builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
