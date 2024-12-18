@@ -1,4 +1,5 @@
 using JWTAuthenticationWebAPI.Core.DbContext;
+using JWTAuthenticationWebAPI.Core.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -40,35 +41,6 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.SignIn.RequireConfirmedEmail = false;
 });
-#endregion
-
-#region A better Solution For Add and Config IDentity
-
-builder.Services
-    .AddIdentity<IdentityUser, IdentityRole>(options =>
-    {
-        options.Stores.ProtectPersonalData = false;
-
-        options.Password.RequireDigit = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequiredUniqueChars = 0;
-
-        options.SignIn.RequireConfirmedAccount = false;
-        options.SignIn.RequireConfirmedEmail = false;
-        options.SignIn.RequireConfirmedPhoneNumber = false;
-    });
-//    .AddUserStore<ApplicationUserStore>()
-//    .AddRoleStore<ApplicationRoleStore>()
-//    .AddEntityFrameworkStores<ApplicationDbContext>()
-//    .AddDefaultTokenProviders()
-//    .AddClaimsPrincipalFactory<ApplicationClaimPrincipalFactory>();
-
-//builder.Services.AddScoped<IUserStore<ApplicationUser>, ApplicationUserStore>();
-//builder.Services.AddScoped<IRoleStore<ApplicationRole>, ApplicationRoleStore>();
-//builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationClaimPrincipalFactory>();
-
 #endregion
 
 // Add Authentication and JwtBearer
